@@ -2,7 +2,7 @@
 
 // import { generateText } from "ai";
 // import { openai } from "@ai-sdk/openai";
-import { uploadImageToCloudinary } from "./cloudinary";
+// import { uploadImageToCloudinary } from "./cloudinary";
 
 // export async function compareImages(formData: FormData): Promise<string> {
 //   try {
@@ -90,17 +90,16 @@ export async function compareImages(formData: FormData): Promise<string> {
     }
 
     // Ensure images are hosted online (Cloudinary or similar)
-    const referenceImageUrl = await uploadImageToCloudinary(referenceImage);
-    const comparisonImageUrl = await uploadImageToCloudinary(comparisonImage);
-    
+    // const referenceImageUrl = await uploadImageToCloudinary(referenceImage);
+    // const comparisonImageUrl = await uploadImageToCloudinary(comparisonImage);
 
-    // const referenceBase64 = await fileToBase64(referenceImage);
-    // const comparisonBase64 = await fileToBase64(comparisonImage);
+    const referenceBase64 = await fileToBase64(referenceImage);
+    const comparisonBase64 = await fileToBase64(comparisonImage);
 
-    // const referenceImageUrl =
-    //   "https://res.cloudinary.com/dzqy1jljf/image/upload/v1747166127/image-comparisons/y4uxudvq2eqa1npxlvto.jpg";
-    // const comparisonImageUrl =
-    //   "https://res.cloudinary.com/dzqy1jljf/image/upload/v1747166129/image-comparisons/d3l4fdvh1vqsfeiym8su.jpg";
+    const referenceImageUrl =
+      "https://res.cloudinary.com/dzqy1jljf/image/upload/v1747166127/image-comparisons/y4uxudvq2eqa1npxlvto.jpg";
+    const comparisonImageUrl =
+      "https://res.cloudinary.com/dzqy1jljf/image/upload/v1747166129/image-comparisons/d3l4fdvh1vqsfeiym8su.jpg";
       
     // Call OpenAI directly
     const response = await openai.chat.completions.create({
@@ -111,8 +110,7 @@ export async function compareImages(formData: FormData): Promise<string> {
           content: `You are an expert at analyzing images and finding differences between them. 
           You will be given two images: a reference image and a comparison image. 
           Your task is to identify all the differences between these images and provide a detailed description of each difference.
-          Focus on just what is missing on the comparison image compared to the reference image.
-          Do not assume any differences; only describe actual detected changes.
+          Focus on just Missing or added objects
           
           Format your response as a list of differences, with each difference clearly described.
           Be specific and detailed in your descriptions, mentioning the exact location and nature of each difference.`,
@@ -124,7 +122,16 @@ export async function compareImages(formData: FormData): Promise<string> {
         },
         {
           role: "user",
-          content: `Reference Image URL: ${referenceImageUrl}\nComparison Image URL: ${comparisonImageUrl}`,
+          content: [
+            {
+              type: "image_url",
+              image_url: { url: referenceBase64 },
+            },
+            {
+              type: "image_url",
+              image_url: { url: comparisonBase64 },
+            },
+          ],
         },
       ],
     });
